@@ -12,9 +12,9 @@ import (
 	"gorm.io/driver/sqlite"
 	"gorm.io/gorm"
 
-	"server/config"
-	"server/handlers"
-	"server/models"
+	"devourer-server/config"
+	"devourer-server/handlers"
+	"devourer-server/models"
 )
 
 func main() {

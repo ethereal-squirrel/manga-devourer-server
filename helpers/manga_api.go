@@ -10,7 +10,7 @@ import (
 	"path/filepath"
 	"strings"
 
-	"server/models"
+	"devourer-server/models"
 )
 
 func FindSeries(path string) (string, error) {

@@ -1,4 +1,4 @@
-module server
+module devourer-server
 
 go 1.23.1
 

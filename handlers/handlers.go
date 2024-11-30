@@ -16,8 +16,8 @@ import (
 	"github.com/gin-gonic/gin"
 	"gorm.io/gorm"
 
-	"server/helpers"
-	"server/models"
+	"devourer-server/helpers"
+	"devourer-server/models"
 )
 
 func ErrorHandler(logger *log.Logger) gin.HandlerFunc {
