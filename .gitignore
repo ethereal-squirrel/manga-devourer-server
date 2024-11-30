@@ -18,3 +18,4 @@ devourer-server.exe
 *.sln
 *.sw?
 /build
+build.sh
