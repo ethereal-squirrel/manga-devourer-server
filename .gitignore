@@ -3,6 +3,9 @@ library.db
 luxi-server
 luxi-server.app
 luxi-server.exe
+devourer-server
+devourer-server.app
+devourer-server.exe
 
 # Editor directories and files
 .vscode/*
@@ -14,3 +17,4 @@ luxi-server.exe
 *.njsproj
 *.sln
 *.sw?
+/build
