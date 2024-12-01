@@ -13,6 +13,7 @@ import (
 	"sort"
 	"strings"
 
+	"github.com/bodgit/sevenzip"
 	"github.com/nwaples/rardecode"
 	"golang.org/x/image/draw"
 	"golang.org/x/image/webp"
@@ -109,6 +110,47 @@ func ProcessRarFile(rarPath string, fileID int) (int, error) {
 				}
 				if header.Name == fileName {
 					if err := extractRarImage(reader, fileID); err != nil {
+						return fileCount, fmt.Errorf("failed to extract image: %v", err)
+					}
+					return fileCount, nil
+				}
+			}
+		}
+	}
+
+	return fileCount, nil
+}
+
+func Process7zFile(archivePath string, fileID int) (int, error) {
+	archive, err := sevenzip.OpenReader(archivePath)
+	if err != nil {
+		return 0, fmt.Errorf("failed to open 7z archive: %v", err)
+	}
+	defer archive.Close()
+
+	var fileNames []string
+	fileCount := 0
+
+	for _, file := range archive.File {
+		if !file.FileInfo().IsDir() {
+			fileNames = append(fileNames, file.Name)
+			fileCount++
+		}
+	}
+
+	sort.Strings(fileNames)
+
+	for _, fileName := range fileNames {
+		if isImageFile(fileName) {
+			for _, file := range archive.File {
+				if file.Name == fileName {
+					srcFile, err := file.Open()
+					if err != nil {
+						return fileCount, fmt.Errorf("failed to open file in archive: %v", err)
+					}
+					defer srcFile.Close()
+
+					if err := extractRarImage(srcFile, fileID); err != nil {
 						return fileCount, fmt.Errorf("failed to extract image: %v", err)
 					}
 					return fileCount, nil
@@ -229,6 +271,42 @@ func UnrarFile(rarPath, destDir string) error {
 			return err
 		}
 	}
+	return nil
+}
+
+func Un7zFile(archivePath, destDir string) error {
+	archive, err := sevenzip.OpenReader(archivePath)
+	if err != nil {
+		return fmt.Errorf("failed to open 7z archive: %v", err)
+	}
+	defer archive.Close()
+
+	for _, file := range archive.File {
+		destPath := filepath.Join(destDir, file.Name)
+
+		if file.FileInfo().IsDir() {
+			os.MkdirAll(destPath, 0755)
+			continue
+		}
+
+		os.MkdirAll(filepath.Dir(destPath), 0755)
+		destFile, err := os.Create(destPath)
+		if err != nil {
+			return fmt.Errorf("failed to create file: %v", err)
+		}
+		defer destFile.Close()
+
+		srcFile, err := file.Open()
+		if err != nil {
+			return fmt.Errorf("failed to open file in archive: %v", err)
+		}
+		defer srcFile.Close()
+
+		if _, err := io.Copy(destFile, srcFile); err != nil {
+			return fmt.Errorf("failed to copy file data: %v", err)
+		}
+	}
+
 	return nil
 }
 
