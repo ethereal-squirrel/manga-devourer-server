@@ -324,7 +324,7 @@ func scanLibraryBackground(db *gorm.DB, library models.Library) {
 			continue
 		}
 
-		if file.Extension == ".zip" || file.Extension == ".cbz" || file.Extension == ".rar" || file.Extension == ".cbr" {
+		if file.Extension == ".zip" || file.Extension == ".cbz" || file.Extension == ".rar" || file.Extension == ".cbr" || file.Extension == ".7z" || file.Extension == ".cb7" {
 			seriesPath := filepath.ToSlash(filepath.Dir(file.Path))
 			seriesName := filepath.Base(seriesPath)
 
@@ -406,6 +406,8 @@ func scanLibraryBackground(db *gorm.DB, library models.Library) {
 						totalPages, err = helpers.ProcessZipFile(file.Path, int(fileModel.ID))
 					} else if file.Extension == ".rar" || file.Extension == ".cbr" {
 						totalPages, err = helpers.ProcessRarFile(file.Path, int(fileModel.ID))
+					} else if file.Extension == ".7z" || file.Extension == ".cb7" {
+						totalPages, err = helpers.Process7zFile(file.Path, int(fileModel.ID))
 					}
 					if err == nil {
 						fileModel.TotalPages = totalPages
@@ -786,6 +788,20 @@ func convertRarToZip(cleanPath string) (*os.File, error) {
 
 	if err := helpers.UnrarFile(cleanPath, tempDir); err != nil {
 		return nil, errors.New("failed to unrar file")
+	}
+
+	return createTempZip(tempDir)
+}
+
+func convert7zToZip(cleanPath string) (*os.File, error) {
+	tempDir, err := os.MkdirTemp("", "un7z-*")
+	if err != nil {
+		return nil, errors.New("failed to create temp directory")
+	}
+	defer os.RemoveAll(tempDir)
+
+	if err := helpers.Un7zFile(cleanPath, tempDir); err != nil {
+		return nil, errors.New("failed to un7z file")
 	}
 
 	return createTempZip(tempDir)

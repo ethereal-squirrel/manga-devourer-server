@@ -18,7 +18,7 @@ func ScanDirectory(dirPath string) ([]FileInfo, error) {
 
 	err := filepath.Walk(dirPath, func(path string, info os.FileInfo, err error) error {
 		if err != nil {
-			return err
+			println("Error scanning directory: ", err)
 		}
 		if !info.IsDir() {
 			results = append(results, FileInfo{
