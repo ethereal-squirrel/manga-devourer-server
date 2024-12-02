@@ -439,8 +439,8 @@ func scanLibraryBackground(db *gorm.DB, library models.Library) {
 			var imageFound bool = false
 
 			pathParts := strings.Split(file.Path, string(os.PathSeparator))
-			seriesPath := strings.Join(pathParts[:len(pathParts)-2], string(os.PathSeparator))
-			seriesName := filepath.Base(seriesPath)
+			//seriesPath := strings.Join(pathParts[:len(pathParts)-2], string(os.PathSeparator))
+			//seriesName := filepath.Base(seriesPath)
 
 			secondToLastElement := pathParts[len(pathParts)-2]
 			dirPath := strings.Join(pathParts[:len(pathParts)-1], string(os.PathSeparator))
@@ -451,10 +451,6 @@ func scanLibraryBackground(db *gorm.DB, library models.Library) {
 			if slices.Contains(localFilesScanned, dirPath) {
 				continue
 			}
-
-			println("File path: ", file.Path)
-			println("Series path: ", seriesPath)
-			println("Dir path: ", dirPath)
 
 			log.Printf("Searching for series %s with path: %s", seriesName, seriesPath)
 
