@@ -335,9 +335,6 @@ func scanLibraryBackground(db *gorm.DB, library models.Library) {
 		}
 
 		seriesName := pathParts[0]
-		if len(pathParts) > 1 {
-			seriesName = pathParts[0] + " " + pathParts[1]
-		}
 		seriesPath := filepath.Join(library.Path, seriesName)
 
 		println("Series name: ", seriesName)
