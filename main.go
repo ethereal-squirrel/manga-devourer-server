@@ -77,6 +77,11 @@ func initDB(logger *log.Logger) (*gorm.DB, error) {
 		} else {
 			logger.Printf("Failed to check for scan_lock entry: %v", err)
 		}
+	} else {
+		config.Value = "0"
+		if err := db.Save(&config).Error; err != nil {
+			logger.Printf("Failed to update scan_lock entry: %v", err)
+		}
 	}
 
 	return db, nil
