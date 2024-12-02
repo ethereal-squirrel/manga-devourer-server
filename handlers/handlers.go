@@ -335,7 +335,13 @@ func scanLibraryBackground(db *gorm.DB, library models.Library) {
 		}
 
 		seriesName := pathParts[0]
+		if len(pathParts) > 1 {
+			seriesName = pathParts[0] + " " + pathParts[1]
+		}
 		seriesPath := filepath.Join(library.Path, seriesName)
+
+		println("Series name: ", seriesName)
+		println("Series path: ", seriesPath)
 
 		if file.Extension == ".zip" || file.Extension == ".cbz" || file.Extension == ".rar" || file.Extension == ".cbr" || file.Extension == ".7z" || file.Extension == ".cb7" {
 			log.Printf("Searching for series with path: %s", seriesPath)
