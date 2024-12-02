@@ -310,7 +310,17 @@ func scanLibraryBackground(db *gorm.DB, library models.Library) {
 	var localFilesScanned []string
 
 	for _, file := range files {
-		pathParts := strings.Split(file.Path, string(os.PathSeparator))
+		relativePath, err := filepath.Rel(library.Path, file.Path)
+		if err != nil {
+			log.Printf("Failed to get relative path: %v", err)
+			continue
+		}
+		pathParts := strings.Split(relativePath, string(os.PathSeparator))
+		if len(pathParts) < 1 {
+			log.Printf("Invalid path structure: %s", file.Path)
+			continue
+		}
+
 		skip := false
 
 		for _, part := range pathParts {
@@ -324,10 +334,10 @@ func scanLibraryBackground(db *gorm.DB, library models.Library) {
 			continue
 		}
 
-		if file.Extension == ".zip" || file.Extension == ".cbz" || file.Extension == ".rar" || file.Extension == ".cbr" || file.Extension == ".7z" || file.Extension == ".cb7" {
-			seriesPath := filepath.ToSlash(filepath.Dir(file.Path))
-			seriesName := filepath.Base(seriesPath)
+		seriesName := pathParts[0]
+		seriesPath := filepath.Join(library.Path, seriesName)
 
+		if file.Extension == ".zip" || file.Extension == ".cbz" || file.Extension == ".rar" || file.Extension == ".cbr" || file.Extension == ".7z" || file.Extension == ".cb7" {
 			log.Printf("Searching for series with path: %s", seriesPath)
 
 			var series models.Series

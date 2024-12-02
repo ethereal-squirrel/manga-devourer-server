@@ -16,9 +16,14 @@ type FileInfo struct {
 func ScanDirectory(dirPath string) ([]FileInfo, error) {
 	var results []FileInfo
 
+	println("Scanning directory: ", dirPath)
+
 	err := filepath.Walk(dirPath, func(path string, info os.FileInfo, err error) error {
 		if err != nil {
 			println("Error scanning directory: ", err)
+		}
+		if info == nil {
+			return nil
 		}
 		if !info.IsDir() {
 			results = append(results, FileInfo{
