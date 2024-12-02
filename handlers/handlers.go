@@ -662,13 +662,13 @@ func SetCurrentPage(db *gorm.DB) gin.HandlerFunc {
 }
 func StreamFile(db *gorm.DB) gin.HandlerFunc {
 	return func(c *gin.Context) {
-		seriesId, filePath, err := validateInput(c)
+		seriesId, fileId, err := validateInput(c)
 		if err != nil {
 			handleError(c, http.StatusBadRequest, err.Error())
 			return
 		}
 
-		cleanPath, err := validateFilePath(db, seriesId, filePath)
+		cleanPath, err := validateFilePath(db, seriesId, fileId)
 		if err != nil {
 			handleError(c, http.StatusBadRequest, err.Error())
 			return
@@ -690,19 +690,19 @@ func StreamFile(db *gorm.DB) gin.HandlerFunc {
 
 func validateInput(c *gin.Context) (string, string, error) {
 	seriesId := c.Query("seriesId")
-	filePath := c.Query("path")
+	fileId := c.Query("fileId")
 
 	if seriesId == "" {
 		return "", "", errors.New("series id is required")
 	}
-	if filePath == "" {
-		return "", "", errors.New("file path is required")
+	if fileId == "" {
+		return "", "", errors.New("file id is required")
 	}
 
-	return seriesId, filePath, nil
+	return seriesId, fileId, nil
 }
 
-func validateFilePath(db *gorm.DB, seriesId, filePath string) (string, error) {
+func validateFilePath(db *gorm.DB, seriesId, fileId string) (string, error) {
 	var series models.Series
 	if err := db.Select("id, title, library_id, path").Where("id = ?", seriesId).First(&series).Error; err != nil {
 		return "", errors.New("series not found")
@@ -713,14 +713,19 @@ func validateFilePath(db *gorm.DB, seriesId, filePath string) (string, error) {
 		return "", errors.New("library not found")
 	}
 
-	normalizedFilePath := filepath.ToSlash(filePath)
+	var file models.File
+	if err := db.First(&file, fileId).Error; err != nil {
+		return "", errors.New("file not found")
+	}
+
+	normalizedFilePath := filepath.ToSlash(file.Path)
 	normalizedLibraryPath := filepath.ToSlash(library.Path)
 
 	if !strings.HasPrefix(normalizedFilePath, normalizedLibraryPath) {
 		return "", errors.New("file path is not within the library path")
 	}
 
-	cleanPath := filepath.Clean(filePath)
+	cleanPath := filepath.Clean(normalizedFilePath)
 	if !filepath.IsAbs(cleanPath) {
 		cleanPath = filepath.Join(".", cleanPath)
 	}
