@@ -210,6 +210,7 @@ func GetLibrary(db *gorm.DB) gin.HandlerFunc {
 		if err := db.Table("series").
 			Select("series.*, manga_data as manga_data, (SELECT COUNT(*) FROM files WHERE files.series_id = series.id) as file_count").
 			Where("series.library_id = ?", id).
+			Order("series.title ASC").
 			Scan(&seriesList).Error; err != nil {
 			c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to fetch series."})
 			return
