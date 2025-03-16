@@ -22,30 +22,12 @@ jobs:
           node-version: "20"
       - run: npm i
       - run: npm i -g "@yao-pkg/pkg"
-      - name: Build with verbose output
-        shell: pwsh
-        run: |
-          Write-Host "Current directory before build:"
-          Get-Location
-          Get-ChildItem
-          Write-Host "`nRunning build script..."
-          node scripts/build.js win
-          Write-Host "`nBuild complete. Checking executables:"
-          Get-ChildItem executables/
-      - name: Debug directory structure
-        shell: pwsh
-        run: |
-          Write-Host "Current directory:"
-          Get-Location
-          Write-Host "`nRoot directory contents:"
-          Get-ChildItem
-          Write-Host "`nExecutables directory contents:"
-          Get-ChildItem executables/
+      - run: node scripts/build.js win
       - name: Rename Windows executable
         shell: pwsh
         run: |
           $version = "${{ github.event.inputs.version }}" -replace '^v',''
-          Rename-Item "./executables/manga-devourer-server-win.exe" "./executables/manga-devourer-server-win-$version.exe"
+          Rename-Item "./executables/manga-devourer-server.exe" "./executables/manga-devourer-server-win-$version.exe"
       - name: Upload Windows artifact
         uses: actions/upload-artifact@v4
         with:
@@ -62,23 +44,12 @@ jobs:
           node-version: "20"
       - run: npm i
       - run: npm i -g "@yao-pkg/pkg"
-      - name: Build with verbose output
-        run: |
-          echo "Current directory before build:"
-          pwd
-          ls -la
-          echo "Running build script..."
-          node scripts/build.js linux
-          echo "Build complete. Checking executables:"
-          ls -la executables/
-      - name: Debug directory structure
-        run: |
-          ls -la executables/
+      - run: node scripts/build.js linux
       - name: Rename Linux executable
         run: |
           version="${{ github.event.inputs.version }}"
           version=${version#v}
-          mv "./executables/manga-devourer-server-linux" "./executables/manga-devourer-server-linux-${version}"
+          mv "./executables/manga-devourer-server" "./executables/manga-devourer-server-linux-${version}"
       - name: Upload Linux artifact
         uses: actions/upload-artifact@v4
         with:
@@ -95,23 +66,12 @@ jobs:
           node-version: "20"
       - run: npm i
       - run: npm i -g "@yao-pkg/pkg"
-      - name: Build with verbose output
-        run: |
-          echo "Current directory before build:"
-          pwd
-          ls -la
-          echo "Running build script..."
-          node scripts/build.js macos
-          echo "Build complete. Checking executables:"
-          ls -la executables/
-      - name: Debug directory structure
-        run: |
-          ls -la executables/
+      - run: node scripts/build.js macos
       - name: Rename macOS executable
         run: |
           version="${{ github.event.inputs.version }}"
           version=${version#v}
-          mv "./executables/manga-devourer-server-macos" "./executables/manga-devourer-server-macos-${version}"
+          mv "./executables/manga-devourer-server" "./executables/manga-devourer-server-macos-${version}"
       - name: Upload macOS artifact
         uses: actions/upload-artifact@v4
         with:
