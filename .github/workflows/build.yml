@@ -28,8 +28,10 @@ jobs:
         run: |
           Write-Host "Current directory:"
           Get-Location
-          Write-Host "`nDirectory contents:"
-          Get-ChildItem -Recurse
+          Write-Host "`nRoot directory contents:"
+          Get-ChildItem
+          Write-Host "`nExecutables directory contents:"
+          Get-ChildItem executables/
       - name: Rename Windows executable
         shell: pwsh
         run: |
@@ -59,7 +61,7 @@ jobs:
           echo -e "\nDirectory contents:"
           ls -la
           echo -e "\nFull directory tree:"
-          find . -type f
+          find ./executables -type f
       - name: Rename Linux executable
         run: |
           version="${{ github.event.inputs.version }}"
@@ -89,7 +91,7 @@ jobs:
           echo -e "\nDirectory contents:"
           ls -la
           echo -e "\nFull directory tree:"
-          find . -type f
+          find ./executables -type f
       - name: Rename macOS executable
         run: |
           version="${{ github.event.inputs.version }}"
