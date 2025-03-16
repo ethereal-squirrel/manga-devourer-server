@@ -22,7 +22,16 @@ jobs:
           node-version: "20"
       - run: npm i
       - run: npm i -g "@yao-pkg/pkg"
-      - run: node scripts/build.js win
+      - name: Build with verbose output
+        shell: pwsh
+        run: |
+          Write-Host "Current directory before build:"
+          Get-Location
+          Get-ChildItem
+          Write-Host "`nRunning build script..."
+          node scripts/build.js win
+          Write-Host "`nBuild complete. Checking executables:"
+          Get-ChildItem executables/
       - name: Debug directory structure
         shell: pwsh
         run: |
@@ -53,15 +62,18 @@ jobs:
           node-version: "20"
       - run: npm i
       - run: npm i -g "@yao-pkg/pkg"
-      - run: node scripts/build.js linux
+      - name: Build with verbose output
+        run: |
+          echo "Current directory before build:"
+          pwd
+          ls -la
+          echo "Running build script..."
+          node scripts/build.js linux
+          echo "Build complete. Checking executables:"
+          ls -la executables/
       - name: Debug directory structure
         run: |
-          echo "Current directory:"
-          pwd
-          echo -e "\nDirectory contents:"
-          ls -la
-          echo -e "\nFull directory tree:"
-          find ./executables -type f
+          ls -la executables/
       - name: Rename Linux executable
         run: |
           version="${{ github.event.inputs.version }}"
@@ -83,15 +95,18 @@ jobs:
           node-version: "20"
       - run: npm i
       - run: npm i -g "@yao-pkg/pkg"
-      - run: node scripts/build.js macos
+      - name: Build with verbose output
+        run: |
+          echo "Current directory before build:"
+          pwd
+          ls -la
+          echo "Running build script..."
+          node scripts/build.js macos
+          echo "Build complete. Checking executables:"
+          ls -la executables/
       - name: Debug directory structure
         run: |
-          echo "Current directory:"
-          pwd
-          echo -e "\nDirectory contents:"
-          ls -la
-          echo -e "\nFull directory tree:"
-          find ./executables -type f
+          ls -la executables/
       - name: Rename macOS executable
         run: |
           version="${{ github.event.inputs.version }}"
