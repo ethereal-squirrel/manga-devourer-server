@@ -21,6 +21,7 @@ jobs:
         with:
           node-version: "20"
       - run: npm i
+      - run: npm i -g "@yao-pkg/pkg"
       - run: node scripts/build.js win
       - name: Rename Windows executable
         shell: pwsh
@@ -42,6 +43,7 @@ jobs:
         with:
           node-version: "20"
       - run: npm i
+      - run: npm i -g "@yao-pkg/pkg"
       - run: node scripts/build.js linux
       - name: Rename Linux executable
         run: |
@@ -63,6 +65,7 @@ jobs:
         with:
           node-version: "20"
       - run: npm i
+      - run: npm i -g "@yao-pkg/pkg"
       - run: node scripts/build.js macos
       - name: Rename macOS executable
         run: |
