@@ -1,0 +1,50 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+  binaryTargets = ["native", "windows", "debian-openssl-1.1.x", "debian-openssl-3.0.x", "linux-musl", "darwin", "darwin-arm64"]
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+model Config {
+  id    Int    @id @default(autoincrement())
+  key   String @unique
+  value String
+}
+
+model Library {
+  id     Int      @id @default(autoincrement())
+  name   String   @unique
+  path   String   @unique
+  series Series[]
+}
+
+model Series {
+  id        Int     @id @default(autoincrement())
+  title     String
+  path      String  @unique
+  cover     String
+  libraryId Int
+  mangaData String
+  library   Library @relation(fields: [libraryId], references: [id])
+  files     File[]
+}
+
+model File {
+  id          Int     @id @default(autoincrement())
+  path        String  @unique
+  fileName    String
+  fileFormat  String
+  volume      Int
+  chapter     Int
+  totalPages  Int
+  currentPage Int
+  isRead      Boolean
+  seriesId    Int
+  series      Series  @relation(fields: [seriesId], references: [id])
+}

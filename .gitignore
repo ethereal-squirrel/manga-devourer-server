@@ -1,0 +1,9 @@
+node_modules
+# Keep environment variables out of version control
+.env
+assets
+tmp
+dist
+prisma/library.db-journal
+prisma/devourer.db
+executables
