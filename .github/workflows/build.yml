@@ -1,5 +1,8 @@
 name: Build and Release
 
+permissions:
+  contents: write
+
 on:
   workflow_dispatch:
     inputs:
@@ -22,12 +25,18 @@ jobs:
           node-version: "20"
       - run: npm i
       - run: npm i -g "@yao-pkg/pkg"
-      - run: node scripts/build.js win
+      - name: Build with verbose output
+        shell: pwsh
+        run: |
+          Write-Host "`nRunning build script..."
+          node scripts/build.js win
+          Write-Host "`nBuild complete. Checking executables:"
+          Get-ChildItem executables
       - name: Rename Windows executable
         shell: pwsh
         run: |
           $version = "${{ github.event.inputs.version }}" -replace '^v',''
-          Rename-Item "executables/manga-devourer-server-win.exe" "manga-devourer-server-win-$version.exe"
+          Move-Item "executables/manga-devourer-server.exe" "executables/manga-devourer-server-win-$version.exe"
       - name: Upload Windows artifact
         uses: actions/upload-artifact@v4
         with:
@@ -49,7 +58,7 @@ jobs:
         run: |
           version="${{ github.event.inputs.version }}"
           version=${version#v}
-          mv executables/manga-devourer-server-linux "executables/manga-devourer-server-linux-${version}"
+          mv "./executables/manga-devourer-server" "./executables/manga-devourer-server-linux-${version}"
       - name: Upload Linux artifact
         uses: actions/upload-artifact@v4
         with:
@@ -71,7 +80,7 @@ jobs:
         run: |
           version="${{ github.event.inputs.version }}"
           version=${version#v}
-          mv executables/manga-devourer-server-macos "executables/manga-devourer-server-macos-${version}"
+          mv "./executables/manga-devourer-server" "./executables/manga-devourer-server-macos-${version}"
       - name: Upload macOS artifact
         uses: actions/upload-artifact@v4
         with:
@@ -88,14 +97,17 @@ jobs:
         with:
           path: artifacts
 
-      - name: Prepare release files
+      - name: Debug artifacts
+        run: |
+          echo "Artifacts directory contents:"
+          ls -R artifacts/
+
+      - name: Set version without v prefix
+        id: version
         run: |
           version="${{ github.event.inputs.version }}"
           version=${version#v}
-          mkdir release-files
-          cp artifacts/win-executable/manga-devourer-server-win-${version}.exe release-files/
-          cp artifacts/linux-executable/manga-devourer-server-linux-${version} release-files/
-          cp artifacts/macos-executable/manga-devourer-server-macos-${version} release-files/
+          echo "VERSION=$version" >> $GITHUB_OUTPUT
 
       - name: Create Release
         uses: softprops/action-gh-release@v1
@@ -104,8 +116,6 @@ jobs:
           name: Release ${{ github.event.inputs.version }}
           body: ${{ github.event.inputs.release_notes }}
           files: |
-            release-files/manga-devourer-server-win-${{ github.event.inputs.version }}.exe
-            release-files/manga-devourer-server-linux-${{ github.event.inputs.version }}
-            release-files/manga-devourer-server-macos-${{ github.event.inputs.version }}
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+            artifacts/win-executable/manga-devourer-server-win-${{ steps.version.outputs.VERSION }}.exe
+            artifacts/linux-executable/manga-devourer-server-linux-${{ steps.version.outputs.VERSION }}
+            artifacts/macos-executable/manga-devourer-server-macos-${{ steps.version.outputs.VERSION }}
