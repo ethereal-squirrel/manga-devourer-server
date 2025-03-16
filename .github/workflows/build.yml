@@ -1,0 +1,94 @@
+name: Build and Release
+
+on:
+  workflow_dispatch:
+    inputs:
+      version:
+        description: 'Version number for the release (e.g., v1.0.0)'
+        required: true
+        type: string
+
+jobs:
+  build-windows:
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+      - run: npm ci
+      - run: npm run pkg:build
+      - name: Rename Windows executable
+        shell: pwsh
+        run: |
+          $version = "${{ github.event.inputs.version }}" -replace '^v',''
+          Rename-Item "executables/manga-devourer-server-win.exe" "manga-devourer-server-win-$version.exe"
+      - name: Upload Windows artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: win-executable
+          path: executables/manga-devourer-server-win-*.exe
+          retention-days: 1
+
+  build-linux:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+      - run: npm ci
+      - run: npm run pkg:build
+      - name: Rename Linux executable
+        run: |
+          version="${{ github.event.inputs.version }}"
+          version=${version#v}
+          mv executables/manga-devourer-server-linux "executables/manga-devourer-server-linux-${version}"
+      - name: Upload Linux artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: linux-executable
+          path: executables/manga-devourer-server-linux-*
+          retention-days: 1
+
+  build-macos:
+    runs-on: macos-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+      - run: npm ci
+      - run: npm run pkg:build
+      - name: Rename macOS executable
+        run: |
+          version="${{ github.event.inputs.version }}"
+          version=${version#v}
+          mv executables/manga-devourer-server-macos "executables/manga-devourer-server-macos-${version}"
+      - name: Upload macOS artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: macos-executable
+          path: executables/manga-devourer-server-macos-*
+          retention-days: 1
+
+  create-release:
+    needs: [build-windows, build-linux, build-macos]
+    runs-on: ubuntu-latest
+    steps:
+      - name: Download all artifacts
+        uses: actions/download-artifact@v4
+        with:
+          path: artifacts
+          
+      - name: Create Release
+        uses: softprops/action-gh-release@v1
+        with:
+          tag_name: ${{ github.event.inputs.version }}
+          name: Release ${{ github.event.inputs.version }}
+          files: |
+            artifacts/win-executable/*
+            artifacts/linux-executable/*
+            artifacts/macos-executable/*
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
