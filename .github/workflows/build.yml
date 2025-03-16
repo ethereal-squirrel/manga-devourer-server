@@ -25,23 +25,20 @@ jobs:
       - name: Build with verbose output
         shell: pwsh
         run: |
-          Write-Host "Current directory before build:"
-          Get-Location
-          Get-ChildItem
           Write-Host "`nRunning build script..."
           node scripts/build.js win
           Write-Host "`nBuild complete. Checking executables:"
-          Get-ChildItem
+          Get-ChildItem executables
       - name: Rename Windows executable
         shell: pwsh
         run: |
           $version = "${{ github.event.inputs.version }}" -replace '^v',''
-          Move-Item "manga-devourer-server.exe" "manga-devourer-server-win-$version.exe"
+          Move-Item "executables/manga-devourer-server.exe" "executables/manga-devourer-server-win-$version.exe"
       - name: Upload Windows artifact
         uses: actions/upload-artifact@v4
         with:
           name: win-executable
-          path: manga-devourer-server-win-*.exe
+          path: executables/manga-devourer-server-win-*.exe
           retention-days: 1
 
   build-linux:
