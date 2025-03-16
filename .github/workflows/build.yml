@@ -21,7 +21,7 @@ jobs:
         with:
           node-version: "20"
       - run: npm ci
-      - run: npm run pkg:build
+      - run: node scripts/build.js win
       - name: Rename Windows executable
         shell: pwsh
         run: |
@@ -42,7 +42,7 @@ jobs:
         with:
           node-version: "20"
       - run: npm ci
-      - run: npm run pkg:build
+      - run: node scripts/build.js linux
       - name: Rename Linux executable
         run: |
           version="${{ github.event.inputs.version }}"
@@ -63,7 +63,7 @@ jobs:
         with:
           node-version: "20"
       - run: npm ci
-      - run: npm run pkg:build
+      - run: node scripts/build.js macos
       - name: Rename macOS executable
         run: |
           version="${{ github.event.inputs.version }}"
