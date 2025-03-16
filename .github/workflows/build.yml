@@ -105,7 +105,8 @@ jobs:
       - name: Set version without v prefix
         id: version
         run: |
-          version = "${{ github.event.inputs.version }}" -replace '^v',''
+          version="${{ github.event.inputs.version }}"
+          version=${version#v}
           echo "VERSION=$version" >> $GITHUB_OUTPUT
 
       - name: Create Release
