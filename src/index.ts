@@ -141,6 +141,74 @@ async function initializeDatabase() {
   }
 }
 
+async function handleCommand(command: string, args: string[]) {
+  switch (command) {
+    case "create-library":
+      {
+        const libraryName = args[0];
+        const libraryPath = args[1];
+
+        if (
+          !libraryName ||
+          !libraryPath ||
+          libraryName.length === 0 ||
+          libraryPath.length === 0
+        ) {
+          console.error("Invalid library name or path");
+          process.exit(1);
+        }
+
+        console.log(
+          `[Command] Creating library ${libraryName} at ${libraryPath}`
+        );
+        fetch(`http://localhost:${port}/libraries`, {
+          method: "POST",
+          body: JSON.stringify({ name: libraryName, path: libraryPath }),
+        });
+      }
+      break;
+    case "scan-library":
+      {
+        const libraryId = parseInt(args[0]);
+        if (isNaN(libraryId)) {
+          console.error("Invalid library ID");
+          process.exit(1);
+        }
+
+        console.log(`[Command] Scanning library ${libraryId}`);
+        fetch(`http://localhost:${port}/library/${libraryId}/scan`, {
+          method: "POST",
+        });
+      }
+      break;
+    case "scan-status":
+      {
+        const libraryId = parseInt(args[0]);
+        if (isNaN(libraryId)) {
+          console.error("Invalid library ID");
+          process.exit(1);
+        }
+
+        console.log(
+          `[Command] Retrieving scan status for library ${libraryId}`
+        );
+
+        const res = await fetch(
+          `http://localhost:${port}/library/${libraryId}/scan-status`,
+          {
+            method: "GET",
+          }
+        );
+        const data = await res.json();
+        console.log(data);
+      }
+      break;
+    default:
+      console.error(`Unknown command: ${command}`);
+      process.exit(1);
+  }
+}
+
 async function startApp() {
   try {
     await initializeDatabase();
@@ -159,4 +227,14 @@ async function startApp() {
   }
 }
 
-startApp();
+const args = process.argv.slice(2);
+
+if (args.length === 0) {
+  startApp();
+} else {
+  const [command, ...commandArgs] = args;
+  handleCommand(command, commandArgs).catch((error) => {
+    console.error("Command failed:", error);
+    process.exit(1);
+  });
+}

@@ -102,3 +102,17 @@ Retrieve the cover file for the specified series.
 #### [GET] /preview-image/:libraryId/:seriesId/:fileId.jpg
 
 Retrieve the preview file for the specified file.
+
+You can also run the following commands at the command line.
+
+#### ./manga-devourer-server create-library :name :path
+
+This will create a library with the specified name aimed at the specified path (e.g. "./manga-devourer-server create-library Manga D:/Manga").
+
+#### ./manga-devourer-server scan-library :libraryId
+
+This will scan the specified library.
+
+#### ./manga-devourer-server scan-status :libraryId
+
+This will retrieve the scan status of the specified library.
