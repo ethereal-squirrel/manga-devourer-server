@@ -41,7 +41,7 @@ Create a new library. Accept a JSON payload of **name** (name of library) and **
 
 Expects: { "name": "Manga", "path": "D:\\Manga" }
 
-####[GET] /library/:id
+#### [GET] /library/:id
 
 Retrieve details for the specified library.
 
@@ -53,15 +53,15 @@ Scan the specified library.
 
 Retrieve scan status details.
 
-####[GET] /series/:id
+#### [GET] /series/:id
 
 Retrieve details for the specified series.
 
-####[DELETE] /series/:id
+#### [DELETE] /series/:id
 
 Delete the specified series.
 
-####[GET] /series/:id/files
+#### [GET] /series/:id/files
 
 Retrieve files for the specified series.
 
