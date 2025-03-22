@@ -15,7 +15,7 @@ A manga library server created to provide a highly performant system to archive,
 
 ### Binary Releases
 
-TBC
+[Releases page](https://github.com/ethereal-squirrel/manga-devourer-server/releases)
 
 ### Manual Install
 
