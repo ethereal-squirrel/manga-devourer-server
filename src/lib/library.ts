@@ -7,7 +7,6 @@ import { Readable } from "stream";
 
 import { isImage } from "./file";
 import { prisma } from "./prisma";
-import { Library } from "../types/types";
 import { getAllSeries } from "./series";
 import { extractChapterAndVolume } from "./file";
 import { getAllFiles } from "./filesystem";
@@ -66,6 +65,13 @@ export interface GetScanStatusResponse {
   remaining?: string[];
 }
 
+const MEMORY_THRESHOLDS = [
+  { threshold: 16 * 1024 * 1024 * 1024, buffer: 32 * 1024 * 1024 },
+  { threshold: 8 * 1024 * 1024 * 1024, buffer: 16 * 1024 * 1024 },
+  { threshold: 4 * 1024 * 1024 * 1024, buffer: 8 * 1024 * 1024 },
+  { threshold: 2 * 1024 * 1024 * 1024, buffer: 4 * 1024 * 1024 },
+];
+
 export const getLibraries = async () => {
   const libraries = await prisma.library.findMany();
   return { status: true, libraries };
@@ -81,18 +87,8 @@ export const getLibrary = async (id: string) => {
 
 const getOptimalBufferSize = () => {
   const freeMemory = os.freemem();
-
-  if (freeMemory >= 16 * 1024 * 1024 * 1024) {
-    return 32 * 1024 * 1024;
-  } else if (freeMemory >= 8 * 1024 * 1024 * 1024) {
-    return 16 * 1024 * 1024;
-  } else if (freeMemory >= 4 * 1024 * 1024 * 1024) {
-    return 8 * 1024 * 1024;
-  } else if (freeMemory >= 2 * 1024 * 1024 * 1024) {
-    return 4 * 1024 * 1024;
-  } else {
-    return 1 * 1024 * 1024;
-  }
+  const setting = MEMORY_THRESHOLDS.find((t) => freeMemory >= t.threshold);
+  return setting?.buffer ?? 1 * 1024 * 1024;
 };
 
 export const processFileInline = async (

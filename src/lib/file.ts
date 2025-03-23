@@ -17,27 +17,18 @@ declare global {
 }
 
 const validImageExtensions = [
-  "jpg",
-  "jpeg",
-  "png",
-  "gif",
-  "bmp",
-  "tiff",
-  "webp",
+  ".jpg",
+  ".jpeg",
+  ".png",
+  ".gif",
+  ".webp",
+  ".avif",
+  ".tiff",
 ];
 
 export function isImage(filename: string): boolean {
-  const imageExtensions = [
-    ".jpg",
-    ".jpeg",
-    ".png",
-    ".gif",
-    ".webp",
-    ".avif",
-    ".tiff",
-  ];
   const ext = filename.toLowerCase().slice(filename.lastIndexOf("."));
-  return imageExtensions.includes(ext);
+  return validImageExtensions.includes(ext);
 }
 
 export const pageEvent = async (fileId: number, page: number) => {
