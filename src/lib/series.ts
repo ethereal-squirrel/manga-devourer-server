@@ -1,3 +1,7 @@
+import { createCanvas, loadImage } from "canvas";
+import * as fs from "fs";
+import * as path from "path";
+
 import { prisma } from "./prisma";
 import { Library, MangaData } from "../types/types";
 import { deleteAllFiles } from "./file";
@@ -51,6 +55,79 @@ export const getSeries = async (id: number) => {
     mangaData: JSON.parse(series?.mangaData || "{}"),
     fileCount,
   };
+};
+
+export const updateSeriesTitle = async (id: number, title: string) => {
+  await prisma.series.update({
+    where: { id },
+    data: { title },
+  });
+
+  return { status: true };
+};
+
+export const updateSeriesMangaData = async (
+  id: number,
+  mangaData: MangaData
+) => {
+  await prisma.series.update({
+    where: { id },
+    data: { mangaData: JSON.stringify(mangaData) },
+  });
+
+  return { status: true };
+};
+
+export const updateSeriesImage = async (id: number, imageBuffer: Buffer) => {
+  const series = await prisma.series.findUnique({
+    where: { id },
+  });
+
+  if (!series) {
+    return { status: false, message: "Series not found" };
+  }
+
+  const library = await prisma.library.findUnique({
+    where: { id: series.libraryId },
+  });
+
+  if (!library) {
+    return { status: false, message: "Library not found" };
+  }
+
+  try {
+    console.log("Loading image from buffer...");
+    const image = await loadImage(imageBuffer);
+    console.log("Image loaded, dimensions:", image.width, "x", image.height);
+
+    const canvas = createCanvas(image.width, image.height);
+    const ctx = canvas.getContext("2d");
+    ctx.drawImage(image, 0, 0);
+
+    const outputBuffer = canvas.toBuffer("image/jpeg", {
+      quality: 0.7,
+      progressive: true,
+    });
+
+    const outputPath = path.join(
+      library.path,
+      ".mangadevourer",
+      "series",
+      series.id.toString(),
+      "cover.jpg"
+    );
+
+    // Ensure directory exists
+    //await fs.promises.mkdir(path.dirname(outputPath), { recursive: true });
+
+    // Write the file
+    await fs.promises.writeFile(outputPath, outputBuffer);
+
+    return { status: true, path: outputPath };
+  } catch (error) {
+    console.error("Error updating series cover image:", error);
+    return { status: false, message: "Failed to update series cover image" };
+  }
 };
 
 export const getFilesBySeriesId = async (seriesId: number) => {

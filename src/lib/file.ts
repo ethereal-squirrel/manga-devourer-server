@@ -139,7 +139,15 @@ export const getPreviewImage = async (
     where: { id: libraryId },
   });
 
-  const previewPath = `${library?.path}/.mangadevourer/series/${seriesId}/previews/${fileId}.jpg`;
+  const file = await prisma.file.findUnique({
+    where: { id: fileId },
+  });
+
+  if (!file) {
+    return false;
+  }
+
+  const previewPath = `${library?.path}/.mangadevourer/series/${seriesId}/previews/${file.fileName}.jpg`;
   return previewPath;
 };
 

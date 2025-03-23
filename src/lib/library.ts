@@ -488,6 +488,22 @@ const scanInBackground = async (
     await processSeries(folder);
   }
 
+  const series = await prisma.series.findMany();
+
+  for (const s of series) {
+    if (!fs.existsSync(s.path)) {
+      console.log(`[Library] Series ${s.title} has no files, deleting`);
+
+      await prisma.file.deleteMany({
+        where: { seriesId: s.id },
+      });
+
+      await prisma.series.delete({
+        where: { id: s.id },
+      });
+    }
+  }
+
   console.log("[Library] Scan completed");
   getScanStatusMap()[libraryId].inProgress = false;
 };
