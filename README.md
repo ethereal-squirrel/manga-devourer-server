@@ -29,7 +29,7 @@ A manga library server created to provide a highly performant system to archive,
 
 ### How To Use
 
-The server exposes the following API endpoints on port 9024. Or, you can just use [Devourer](#); an application designed to work with this server.
+The server exposes the following API endpoints on port 9024. Or, you can just use [Devourer](https://devourer.app); an application designed to work with this server.
 
 #### [GET] /libraries
 
