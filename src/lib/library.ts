@@ -294,24 +294,35 @@ const scanInBackground = async (
           true
         );
 
+        /**/
+
+        let payload = null;
+
+        if (!series.mangaData) {
+          payload = { ...series, mangaData: JSON.stringify({}) };
+        } else {
+          payload = { ...series, mangaData: JSON.stringify(series.mangaData) };
+        }
+
+        console.log(`[Library] Creating new series: ${series.title}`);
+        updateProgress(libraryId, folder, "creating_series");
+
+        existingSeries = await prisma.series.create({
+          data: { ...series, mangaData: JSON.stringify(series.mangaData) },
+        });
+
+        const seriesDir = path.join(
+          libraryPath,
+          ".mangadevourer",
+          "series",
+          existingSeries.id.toString(),
+          "previews"
+        );
+
+        fs.mkdirSync(seriesDir, { recursive: true });
+
         if (series.mangaData) {
-          console.log(`[Library] Creating new series: ${series.title}`);
-          updateProgress(libraryId, folder, "creating_series");
-
-          existingSeries = await prisma.series.create({
-            data: { ...series, mangaData: JSON.stringify(series.mangaData) },
-          });
-
           if (series.mangaData.coverImage) {
-            const seriesDir = path.join(
-              libraryPath,
-              ".mangadevourer",
-              "series",
-              existingSeries.id.toString(),
-              "previews"
-            );
-            fs.mkdirSync(seriesDir, { recursive: true });
-
             await downloadImage(
               series.mangaData.coverImage,
               path.join(
