@@ -66,22 +66,6 @@ export interface GetScanStatusResponse {
   remaining?: string[];
 }
 
-export const createLibrary = async (payload: Library) => {
-  try {
-    if (!fs.existsSync(payload.path)) {
-      return { status: false, message: "Library path does not exist" };
-    }
-
-    const library = await prisma.library.create({
-      data: payload,
-    });
-    return { status: true, library };
-  } catch (e) {
-    console.log("Failed to create library", e);
-    return { status: false, message: "Failed to create library." };
-  }
-};
-
 export const getLibraries = async () => {
   const libraries = await prisma.library.findMany();
   return { status: true, libraries };

@@ -1,4 +1,6 @@
 import { Router, Request, Response } from "express";
+import fs from "fs";
+
 import { checkAuth } from "../lib/auth";
 import { getLibrary, getScanStatus, scanLibrary } from "../lib/library";
 import { asyncHandler } from "../middleware/asyncHandler";
@@ -31,6 +33,10 @@ libraryRouter.post(
     const { name, path } = req.body;
     if (!name || !path) {
       throw new ApiError(400, "Name and path are required");
+    }
+
+    if (!fs.existsSync(path)) {
+      throw new ApiError(400, "Library path does not exist");
     }
 
     const library = await prisma.library.create({
