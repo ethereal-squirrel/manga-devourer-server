@@ -44,6 +44,9 @@ libraryRouter.get(
       librariesData.push({
         ...library,
         series,
+        seriesCount: await prisma.series.count({
+          where: { libraryId: library.id },
+        }),
       });
     }
 
