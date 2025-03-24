@@ -4,6 +4,7 @@ import os from "os";
 import { createCanvas, loadImage } from "canvas";
 import { Uint8ArrayWriter, ZipReader } from "@zip.js/zip.js";
 import { Readable } from "stream";
+import webp from "webp-wasm";
 
 import { isImage } from "./file";
 import { prisma } from "./prisma";
@@ -122,16 +123,55 @@ export const processFileInline = async (
     const firstImage = imageEntries[0] as any;
     const writer = new Uint8ArrayWriter();
     const imageData = await firstImage.getData(writer);
-    const img = await loadImage(Buffer.from(imageData));
+    const imageDataBuffer = Buffer.from(imageData);
 
+    const isWebP =
+      imageDataBuffer.toString("ascii", 0, 4) === "RIFF" &&
+      imageDataBuffer.toString("ascii", 8, 12) === "WEBP";
+
+    let width: number;
+    let height: number;
+    let imageToRender: any;
+
+    if (isWebP) {
+      // Decode WebP into RGBA pixels
+      const decoded = await webp.decode(imageDataBuffer);
+
+      // Create proper ImageData using node-canvas
+      const tempCanvas = createCanvas(decoded.width, decoded.height);
+      const tempCtx = tempCanvas.getContext("2d");
+      imageToRender = tempCtx.createImageData(decoded.width, decoded.height);
+      imageToRender.data.set(decoded.data);
+
+      width = decoded.width;
+      height = decoded.height;
+    } else {
+      imageToRender = await loadImage(imageDataBuffer);
+      width = imageToRender.width;
+      height = imageToRender.height;
+    }
+
+    // Calculate preview dimensions
     const maxWidth = 512;
-    const scale = maxWidth / img.width;
-    const targetWidth = Math.round(img.width * scale);
-    const targetHeight = Math.round(img.height * scale);
+    const scale = maxWidth / width;
+    const targetWidth = Math.round(width * scale);
+    const targetHeight = Math.round(height * scale);
 
+    // Create preview canvas
     const canvas = createCanvas(targetWidth, targetHeight);
     const ctx = canvas.getContext("2d");
-    ctx.drawImage(img, 0, 0, targetWidth, targetHeight);
+
+    if (isWebP) {
+      // For WebP, first draw the ImageData to a temp canvas at original size
+      const tempCanvas = createCanvas(width, height);
+      const tempCtx = tempCanvas.getContext("2d");
+      tempCtx.putImageData(imageToRender, 0, 0);
+
+      // Then scale it to the preview size
+      ctx.drawImage(tempCanvas, 0, 0, targetWidth, targetHeight);
+    } else {
+      ctx.drawImage(imageToRender, 0, 0, targetWidth, targetHeight);
+    }
 
     const buffer = canvas.toBuffer("image/jpeg", {
       quality: 0.7,

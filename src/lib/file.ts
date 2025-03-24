@@ -3,6 +3,7 @@ import { createExtractorFromFile } from "node-unrar-js";
 import fs from "fs";
 import path from "path";
 import { createCanvas, loadImage } from "canvas";
+import webp from "webp-wasm";
 import { v4 as uuidv4 } from "uuid";
 import { finished } from "stream/promises";
 
@@ -446,12 +447,42 @@ export const processNew7z = async (
 
 export const convertImageToJpg = async (imageData: Buffer) => {
   try {
-    const img = await loadImage(imageData);
+    console.log("First 12 bytes:", imageData.slice(0, 12).toString("hex"));
 
-    const canvas = createCanvas(img.width, img.height);
+    const isWebP =
+      imageData.toString("ascii", 0, 4) === "RIFF" &&
+      imageData.toString("ascii", 8, 12) === "WEBP";
+
+    console.log("Is WebP?", isWebP);
+    console.log("First 4 chars:", imageData.toString("ascii", 0, 4));
+    console.log("Chars 8-12:", imageData.toString("ascii", 8, 12));
+
+    let width: number;
+    let height: number;
+    let imageToRender: any;
+
+    if (isWebP) {
+      console.log("Decoding WebP image");
+
+      const decoded = await webp.decode(imageData);
+      imageToRender = decoded;
+      width = decoded.width;
+      height = decoded.height;
+    } else {
+      const img = await loadImage(imageData);
+      imageToRender = img;
+      width = img.width;
+      height = img.height;
+    }
+
+    const canvas = createCanvas(width, height);
     const ctx = canvas.getContext("2d");
 
-    ctx.drawImage(img, 0, 0);
+    if (isWebP) {
+      ctx.putImageData(imageToRender, 0, 0);
+    } else {
+      ctx.drawImage(imageToRender, 0, 0);
+    }
 
     if (!imageData.toString("ascii", 0, 2).startsWith("\xFF\xD8")) {
       return canvas.toBuffer("image/jpeg");
