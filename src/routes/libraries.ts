@@ -71,6 +71,47 @@ libraryRouter.get(
   })
 );
 
+libraryRouter.delete(
+  "/library/:id",
+  checkAuth,
+  asyncHandler(async (req: Request, res: Response<LibraryResponse>) => {
+    const libraryId = Number(req.params.id);
+    if (isNaN(libraryId)) {
+      throw new ApiError(400, "Invalid library ID");
+    }
+
+    const response = await getLibrary(req.params.id);
+    if (!response.status || !response.library) {
+      throw new ApiError(404, "Library not found");
+    }
+
+    await prisma.file.deleteMany({
+      where: {
+        series: {
+          libraryId,
+        },
+      },
+    });
+
+    await prisma.series.deleteMany({
+      where: {
+        libraryId,
+      },
+    });
+
+    await prisma.library.delete({
+      where: {
+        id: libraryId,
+      },
+    });
+
+    res.json({
+      status: true,
+      message: "Library deleted successfully",
+    });
+  })
+);
+
 libraryRouter.post(
   "/library/:id/scan",
   checkAuth,
