@@ -269,11 +269,6 @@ export const extractChapterAndVolume = (fileName: string) => {
   return result;
 };
 
-function cleanFilename(filename: string): string {
-  const re = /\[.*?\]|\(.*?\)|\{.*?\}/g;
-  return filename.replace(re, "").trim();
-}
-
 export const processNewFile = async (
   filePath: string,
   targetPath: string,
@@ -447,23 +442,15 @@ export const processNew7z = async (
 
 export const convertImageToJpg = async (imageData: Buffer) => {
   try {
-    console.log("First 12 bytes:", imageData.slice(0, 12).toString("hex"));
-
     const isWebP =
       imageData.toString("ascii", 0, 4) === "RIFF" &&
       imageData.toString("ascii", 8, 12) === "WEBP";
-
-    console.log("Is WebP?", isWebP);
-    console.log("First 4 chars:", imageData.toString("ascii", 0, 4));
-    console.log("Chars 8-12:", imageData.toString("ascii", 8, 12));
 
     let width: number;
     let height: number;
     let imageToRender: any;
 
     if (isWebP) {
-      console.log("Decoding WebP image");
-
       const decoded = await webp.decode(imageData);
       imageToRender = decoded;
       width = decoded.width;
@@ -492,4 +479,102 @@ export const convertImageToJpg = async (imageData: Buffer) => {
   } catch (error) {
     throw new Error(`Failed to convert image to JPEG: ${error}`);
   }
+};
+
+export const getRecentlyRead = async () => {
+  const recentlyRead = await prisma.recentlyRead.findMany();
+
+  if (recentlyRead.length === 0) {
+    return { status: true, recentlyRead: [] };
+  }
+
+  let files: any[] = [];
+
+  for (const entry of recentlyRead) {
+    const file = await prisma.file.findUnique({
+      select: {
+        id: true,
+        fileName: true,
+        seriesId: true,
+        currentPage: true,
+        totalPages: true,
+        series: {
+          select: {
+            id: true,
+            title: true,
+            libraryId: true,
+          },
+        },
+      },
+      where: { id: entry.fileId },
+    });
+
+    if (file) {
+      files.push(file);
+    }
+  }
+
+  return { status: true, recentlyRead: files };
+};
+
+export const markRecentlyRead = async (
+  libraryId: number,
+  seriesId: number,
+  fileId: number
+) => {
+  const library = await prisma.library.findUnique({
+    where: { id: libraryId },
+  });
+
+  if (!library) {
+    return { status: false, message: "Library not found" };
+  }
+
+  const file = await prisma.file.findUnique({
+    where: { id: fileId, seriesId },
+  });
+
+  if (!file) {
+    return { status: false, message: "File not found" };
+  }
+
+  await prisma.recentlyRead.deleteMany({
+    where: {
+      libraryId,
+      seriesId,
+      fileId,
+    },
+  });
+
+  await prisma.recentlyRead.create({
+    data: {
+      isLocal: false,
+      libraryId,
+      seriesId,
+      fileId,
+      currentPage: file.currentPage,
+      totalPages: file.totalPages,
+      volume: file.volume,
+      chapter: file.chapter,
+    },
+  });
+
+  const allRecentlyRead = await prisma.recentlyRead.findMany({
+    orderBy: {
+      id: "desc",
+    },
+  });
+
+  if (allRecentlyRead.length > 10) {
+    const idsToDelete = allRecentlyRead.slice(10).map((entry) => entry.id);
+    await prisma.recentlyRead.deleteMany({
+      where: {
+        id: {
+          in: idsToDelete,
+        },
+      },
+    });
+  }
+
+  return { status: true };
 };
