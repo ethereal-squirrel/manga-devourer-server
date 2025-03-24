@@ -498,6 +498,8 @@ export const getRecentlyRead = async () => {
         seriesId: true,
         currentPage: true,
         totalPages: true,
+        volume: true,
+        chapter: true,
         series: {
           select: {
             id: true,
