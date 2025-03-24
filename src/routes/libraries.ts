@@ -28,10 +28,28 @@ libraryRouter.get(
   "/libraries",
   checkAuth,
   asyncHandler(async (req: Request, res: Response) => {
+    const librariesData: any[] = [];
     const libraries = await prisma.library.findMany();
+
+    for (const library of libraries) {
+      const series = await prisma.series.findMany({
+        select: {
+          id: true,
+          cover: true,
+        },
+        where: { libraryId: library.id },
+        take: 5,
+      });
+
+      librariesData.push({
+        ...library,
+        series,
+      });
+    }
+
     res.json({
       status: true,
-      libraries,
+      libraries: librariesData,
     });
   })
 );
