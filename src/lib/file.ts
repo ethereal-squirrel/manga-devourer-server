@@ -100,7 +100,9 @@ export const deleteFile = async (fileId: number) => {
   }
 
   try {
-    fs.unlinkSync(`./assets/series/${file.seriesId}/previews/${file.id}.jpg`);
+    fs.unlinkSync(
+      `./assets/series/${file.seriesId}/previews/${file.fileName}.jpg`
+    );
   } catch (e) {
     console.log("Failed to delete preview", e);
   }
