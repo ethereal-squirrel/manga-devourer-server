@@ -52,6 +52,7 @@ model File {
 model RecentlyRead {
   id          Int     @id @default(autoincrement())
   isLocal     Boolean
+  libraryId   Int
   seriesId    Int
   fileId      Int
   currentPage Int
@@ -61,7 +62,8 @@ model RecentlyRead {
 }
 
 model Collection {
-  id     Int    @id @default(autoincrement())
-  name   String
-  series String
+  id        Int    @id @default(autoincrement())
+  libraryId Int
+  name      String
+  series    String
 }

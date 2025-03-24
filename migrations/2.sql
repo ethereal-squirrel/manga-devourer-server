@@ -2,6 +2,7 @@
 CREATE TABLE "RecentlyRead" (
     "id" INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT,
     "isLocal" BOOLEAN NOT NULL,
+    "libraryId" INTEGER NOT NULL,
     "seriesId" INTEGER NOT NULL,
     "fileId" INTEGER NOT NULL,
     "currentPage" INTEGER NOT NULL,
@@ -13,6 +14,7 @@ CREATE TABLE "RecentlyRead" (
 -- CreateTable
 CREATE TABLE "Collection" (
     "id" INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT,
+    "libraryId" INTEGER NOT NULL,
     "name" TEXT NOT NULL,
     "series" TEXT NOT NULL
 );
