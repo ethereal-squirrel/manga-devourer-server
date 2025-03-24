@@ -45,37 +45,89 @@ Expects: { "name": "Manga", "path": "D:\\Manga" }
 
 Retrieve details for the specified library.
 
+Parameters: [id: libraryId]
+
 #### [POST] /library/:id/scan
 
 Scan the specified library.
+
+Parameters: [id: libraryId]
 
 #### [POST] /library/:id/scan-status
 
 Retrieve scan status details.
 
+Parameters: [id: libraryId]
+
+#### [GET] /library/:id/collections
+
+Retrieve collections for a given library.
+
+Parameters: [id: libraryId]
+
+#### [POST] /library/:id/collections
+
+Create a new collection. Accepts a JSON payload of **name** (name of collection).
+
+Expects: { "name": "Action Manga" }
+
+Parameters: [id: libraryId]
+
+#### [POST] /library/collections/:id
+
+Retrieve a collection.
+
+Parameters: [id: collectionId]
+
+#### [POST] /library/collections/:id
+
+Delete a collection.
+
+Parameters: [id: collectionId]
+
+#### [POST] /library/collections/:collectionId/:libraryId/:seriesId
+
+Add a series to a collection.
+
+#### [DELETE] /library/collections/:collectionId/:libraryId/:seriesId
+
+Remove a series from a collection.
+
 #### [GET] /series/:id
 
 Retrieve details for the specified series.
+
+Parameters: [id: seriesId]
 
 #### [DELETE] /series/:id
 
 Delete the specified series.
 
+Parameters: [id: seriesId]
+
 #### [GET] /series/:id/files
 
 Retrieve files for the specified series.
+
+Parameters: [id: seriesId]
 
 #### [GET] /file/:id
 
 Retrieve details for the specified file.
 
+Parameters: [id: fileId]
+
 #### [DELETE] /file/:id
 
 Delete the specified file.
 
+Parameters: [id: fileId]
+
 #### [GET] /get-file/:id
 
-This returns the relevant file  as a .zip archive. If the archive is not a zip, it will extract it and convert it to a zip; this is to support clients that only have zip support.
+This returns the relevant file as a .zip archive. If the archive is not a zip, it will extract it and convert it to a zip; this is to support clients that only have zip support.
+
+Parameters: [id: fileId]
 
 #### [POST] /mark-as-read
 

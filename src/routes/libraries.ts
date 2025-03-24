@@ -2,7 +2,17 @@ import { Router, Request, Response } from "express";
 import fs from "fs";
 
 import { checkAuth } from "../lib/auth";
-import { getLibrary, getScanStatus, scanLibrary } from "../lib/library";
+import {
+  createCollection,
+  deleteCollection,
+  getCollection,
+  getCollections,
+  getLibrary,
+  getScanStatus,
+  addSeriesToCollection,
+  removeSeriesFromCollection,
+  scanLibrary,
+} from "../lib/library";
 import { asyncHandler } from "../middleware/asyncHandler";
 import {
   ApiError,
@@ -158,6 +168,124 @@ libraryRouter.get(
       });
     }
   )
+);
+
+libraryRouter.get(
+  "/library/:id/collections",
+  checkAuth,
+  asyncHandler(async (req: Request, res: Response) => {
+    const libraryId = Number(req.params.id);
+
+    if (isNaN(libraryId)) {
+      throw new ApiError(400, "Invalid library ID");
+    }
+
+    const response = await getCollections(libraryId);
+    res.json(response);
+  })
+);
+
+libraryRouter.post(
+  "/library/:id/collections",
+  checkAuth,
+  asyncHandler(async (req: Request, res: Response) => {
+    const libraryId = Number(req.params.id);
+
+    if (isNaN(libraryId)) {
+      throw new ApiError(400, "Invalid library ID");
+    }
+
+    const response = await createCollection(libraryId, req.body.name);
+    res.json(response);
+  })
+);
+
+libraryRouter.get(
+  "/library/collections/:collectionId",
+  checkAuth,
+  asyncHandler(async (req: Request, res: Response) => {
+    const collectionId = Number(req.params.collectionId);
+
+    if (isNaN(collectionId)) {
+      throw new ApiError(400, "Invalid collection ID");
+    }
+
+    const response = await getCollection(collectionId);
+    res.json(response);
+  })
+);
+
+libraryRouter.delete(
+  "/library/collections/:collectionId",
+  checkAuth,
+  asyncHandler(async (req: Request, res: Response) => {
+    const collectionId = Number(req.params.collectionId);
+
+    if (isNaN(collectionId)) {
+      throw new ApiError(400, "Invalid collection ID");
+    }
+
+    const response = await deleteCollection(collectionId);
+    res.json(response);
+  })
+);
+
+libraryRouter.post(
+  "/library/collections/:collectionId/:libraryId/:seriesId",
+  checkAuth,
+  asyncHandler(async (req: Request, res: Response) => {
+    const collectionId = Number(req.params.collectionId);
+    const libraryId = Number(req.params.libraryId);
+    const seriesId = Number(req.params.seriesId);
+
+    if (isNaN(collectionId)) {
+      throw new ApiError(400, "Invalid collection ID");
+    }
+
+    if (isNaN(libraryId)) {
+      throw new ApiError(400, "Invalid library ID");
+    }
+
+    if (isNaN(seriesId)) {
+      throw new ApiError(400, "Invalid series ID");
+    }
+
+    const response = await addSeriesToCollection(
+      collectionId,
+      libraryId,
+      seriesId
+    );
+    res.json(response);
+  })
+);
+
+libraryRouter.delete(
+  "/library/collections/:collectionId/:libraryId/:seriesId",
+  checkAuth,
+  asyncHandler(async (req: Request, res: Response) => {
+    const collectionId = Number(req.params.collectionId);
+    const libraryId = Number(req.params.libraryId);
+    const seriesId = Number(req.params.seriesId);
+
+    if (isNaN(collectionId)) {
+      throw new ApiError(400, "Invalid collection ID");
+    }
+
+    if (isNaN(libraryId)) {
+      throw new ApiError(400, "Invalid library ID");
+    }
+
+    if (isNaN(seriesId)) {
+      throw new ApiError(400, "Invalid series ID");
+    }
+
+    const response = await removeSeriesFromCollection(
+      collectionId,
+      libraryId,
+      seriesId
+    );
+    res.json(response);
+  })
 );
 
 export default libraryRouter;

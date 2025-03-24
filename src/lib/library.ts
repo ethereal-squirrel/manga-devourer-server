@@ -581,3 +581,156 @@ const updateSeriesComplete = (libraryId: number, series: string) => {
   }
   getScanStatusMap()[libraryId].completedSeries++;
 };
+
+export const createCollection = async (libraryId: number, name: string) => {
+  const existingCollection = await prisma.collection.findFirst({
+    where: {
+      libraryId,
+      name,
+    },
+  });
+
+  if (existingCollection) {
+    return existingCollection;
+  }
+
+  const collection = await prisma.collection.create({
+    data: {
+      libraryId,
+      name,
+      series: JSON.stringify([]),
+    },
+  });
+
+  return { status: true, collection };
+};
+
+export const getCollections = async (libraryId: number) => {
+  const collections = await prisma.collection.findMany({
+    where: {
+      libraryId,
+    },
+  });
+
+  return { status: true, collections };
+};
+
+export const getCollection = async (id: number) => {
+  const collection = await prisma.collection.findUnique({
+    where: {
+      id,
+    },
+  });
+
+  if (!collection) {
+    return { status: false, message: "Collection not found" };
+  }
+
+  const series = JSON.parse(collection.series);
+  let mappedSeriesData: any[] = [];
+
+  if (series.length > 0) {
+    const seriesData = await prisma.series.findMany({
+      where: {
+        id: {
+          in: series,
+        },
+      },
+    });
+
+    mappedSeriesData = seriesData.map((series) => ({
+      ...series,
+      mangaData: series.mangaData ? JSON.parse(series.mangaData) : {},
+    }));
+  }
+
+  return {
+    status: true,
+    collection: { ...collection, series: mappedSeriesData },
+  };
+};
+
+export const deleteCollection = async (id: number) => {
+  await prisma.collection.delete({
+    where: {
+      id,
+    },
+  });
+
+  return { status: true };
+};
+
+export const addSeriesToCollection = async (
+  collectionId: number,
+  libraryId: number,
+  seriesId: number
+) => {
+  const collection = await prisma.collection.findFirst({
+    where: {
+      id: collectionId,
+      libraryId,
+    },
+  });
+
+  if (!collection) {
+    return { status: false, message: "Collection not found" };
+  }
+
+  const series = await prisma.series.findFirst({
+    where: {
+      id: seriesId,
+      libraryId,
+    },
+  });
+
+  if (!series) {
+    return { status: false, message: "Series not found" };
+  }
+
+  const seriesData = JSON.parse(collection.series);
+
+  if (seriesData.includes(seriesId)) {
+    return { status: false, message: "Series already in collection" };
+  }
+
+  seriesData.push(seriesId);
+
+  await prisma.collection.update({
+    where: { id: collectionId },
+    data: { series: JSON.stringify(seriesData) },
+  });
+
+  return { status: true };
+};
+
+export const removeSeriesFromCollection = async (
+  collectionId: number,
+  libraryId: number,
+  seriesId: number
+) => {
+  const collection = await prisma.collection.findFirst({
+    where: {
+      id: collectionId,
+      libraryId,
+    },
+  });
+
+  if (!collection) {
+    return { status: false, message: "Collection not found" };
+  }
+
+  let seriesData = JSON.parse(collection.series);
+
+  if (!seriesData.includes(seriesId)) {
+    return { status: false, message: "Series not in collection" };
+  }
+
+  seriesData = seriesData.filter((id: number) => id !== seriesId);
+
+  await prisma.collection.update({
+    where: { id: collectionId },
+    data: { series: JSON.stringify(seriesData) },
+  });
+
+  return { status: true };
+};
