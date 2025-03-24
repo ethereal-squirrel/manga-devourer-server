@@ -565,8 +565,8 @@ export const markRecentlyRead = async (
     },
   });
 
-  if (allRecentlyRead.length > 10) {
-    const idsToDelete = allRecentlyRead.slice(10).map((entry) => entry.id);
+  if (allRecentlyRead.length > 5) {
+    const idsToDelete = allRecentlyRead.slice(5).map((entry) => entry.id);
     await prisma.recentlyRead.deleteMany({
       where: {
         id: {
