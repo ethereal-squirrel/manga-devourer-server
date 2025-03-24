@@ -4,8 +4,10 @@ import { checkAuth } from "../lib/auth";
 import {
   deleteFile,
   getFile,
+  getRecentlyRead,
   markAllFilesAsRead,
   markAsRead,
+  markRecentlyRead,
   pageEvent,
 } from "../lib/file";
 import { streamFile } from "../lib/filesystem";
@@ -173,6 +175,50 @@ filesRouter.post(
       if (!response.status) {
         throw new ApiError(404, response.message || "File not found");
       }
+
+      res.json(response);
+    }
+  )
+);
+
+filesRouter.get(
+  "/recently-read",
+  checkAuth,
+  asyncHandler(
+    async (
+      req: Request<any, any, PageEventRequest>,
+      res: Response<PageEventResponse>
+    ) => {
+      const response = await getRecentlyRead();
+
+      res.json(response);
+    }
+  )
+);
+
+filesRouter.post(
+  "/recently-read/:libraryId/:seriesId/:fileId",
+  checkAuth,
+  asyncHandler(
+    async (
+      req: Request<any, any, PageEventRequest>,
+      res: Response<PageEventResponse>
+    ) => {
+      const { libraryId, seriesId, fileId } = req.params;
+
+      if (
+        isNaN(parseInt(libraryId)) ||
+        isNaN(parseInt(seriesId)) ||
+        isNaN(parseInt(fileId))
+      ) {
+        throw new ApiError(400, "Invalid library ID, series ID, or file ID");
+      }
+
+      const response = await markRecentlyRead(
+        parseInt(libraryId),
+        parseInt(seriesId),
+        parseInt(fileId)
+      );
 
       res.json(response);
     }
