@@ -2,7 +2,7 @@
 // learn more about it in the docs: https://pris.ly/d/prisma-schema
 
 generator client {
-  provider = "prisma-client-js"
+  provider      = "prisma-client-js"
   binaryTargets = ["native", "windows", "debian-openssl-1.1.x", "debian-openssl-3.0.x", "linux-musl", "darwin", "darwin-arm64"]
 }
 
@@ -47,4 +47,21 @@ model File {
   isRead      Boolean
   seriesId    Int
   series      Series  @relation(fields: [seriesId], references: [id])
+}
+
+model RecentlyRead {
+  id          Int     @id @default(autoincrement())
+  isLocal     Boolean
+  seriesId    Int
+  fileId      Int
+  currentPage Int
+  totalPages  Int
+  volume      Int
+  chapter     Int
+}
+
+model Collection {
+  id     Int    @id @default(autoincrement())
+  name   String
+  series String
 }

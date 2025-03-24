@@ -7,3 +7,4 @@ dist
 prisma/library.db-journal
 prisma/devourer.db
 executables
+prisma/devourer.db-journal
